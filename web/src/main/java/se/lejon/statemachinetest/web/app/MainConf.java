@@ -7,6 +7,6 @@ import se.lejon.statemachinetest.web.statemachine.StateMachineConf;
 
 @Configuration
 @ComponentScan(basePackages = "se.lejon.statemachinetest.web")
-@Import(StateMachineConf.class)
+@Import({StateMachineConf.class, SwaggerConfig.class})
 public class MainConf {
 }
