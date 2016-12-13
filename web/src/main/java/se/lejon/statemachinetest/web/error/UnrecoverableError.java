@@ -1,4 +1,4 @@
-package se.lejon.statemachinetest.web;
+package se.lejon.statemachinetest.web.error;
 
 public class UnrecoverableError extends ProvisioningError {
   public UnrecoverableError(String message) {

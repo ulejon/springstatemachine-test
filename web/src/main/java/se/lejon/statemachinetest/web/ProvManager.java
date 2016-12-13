@@ -7,9 +7,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import se.lejon.statemachinetest.web.client.MDClient;
 import se.lejon.statemachinetest.web.client.MNOClient;
+import se.lejon.statemachinetest.web.error.RecoverableError;
+import se.lejon.statemachinetest.web.error.UnrecoverableError;
+import se.lejon.statemachinetest.web.model.Device;
+import se.lejon.statemachinetest.web.model.Vehicle;
 
 import java.util.Random;
 import java.util.concurrent.CompletableFuture;
+import java.util.function.Function;
+import java.util.function.Supplier;
 
 @Service
 public class ProvManager {
@@ -28,104 +34,46 @@ public class ProvManager {
 
   public CompletableFuture<String> requestMsisdn(String vin) {
     return
-      CompletableFuture.supplyAsync(() -> {
-        logger.info("Start request msisdn");
-        return null;
-      }).thenCompose(v -> mnoClient.getMsisdn(vin))
-        .thenApply(msisdn -> {
-          doSleep(5000);
-          return msisdn;
-        })
-        .thenApply(msisdn -> {
-          logger.info("End request msisdn");
-          return msisdn;
-        })
-        .thenApply(msisdn -> {
-          if (getBool(true)) {
-            return msisdn;
-          } else {
-            if (getBool(true)) {
-              throw new RecoverableError("This is recoverable");
-            } else {
-              throw new UnrecoverableError("This is unrecoverable");
-            }
-          }
-        })
-        .exceptionally(throwable -> {
-          if (ExceptionUtils.getRootCause(throwable) instanceof RecoverableError) {
-            retryService.add(vin);
-          }
-
-          throw new IllegalStateException("Error requesting msisdn", throwable);
-        });
+      CompletableFuture.supplyAsync(getStartCheckpointLogSupplier("Start request msisdn"))
+        .thenCompose(v -> mnoClient.getMsisdn(vin))
+        .thenApply(getSleepFunc())
+        .thenApply(getEndCheckpointLogFunc("End request msisdn"))
+        .thenApply(getRandomResultFunc())
+        .exceptionally(getHandleErrorFunc(vin, "Error requesting msisdn"));
   }
 
   public CompletableFuture<Vehicle> findVehicle(String vin) {
     return
-      CompletableFuture.supplyAsync(() -> {
-        logger.info("Start find vehicle");
-        return null;
-      }).thenCompose(v -> mdClient.findVehicle(vin))
-        .thenApply(vehicle -> {
-          doSleep(5000);
-          return vehicle;
-        })
-        .thenApply(vehicle -> {
-          logger.info("End find vehicle");
-          return vehicle;
-        })
-        .thenApply(vehicle -> {
-          if (getBool(true)) {
-            return vehicle;
-          } else {
-            if (getBool(true)) {
-              throw new RecoverableError("This is recoverable");
-            } else {
-              throw new UnrecoverableError("This is unrecoverable");
-            }
-          }
-        })
-        .exceptionally(throwable -> {
-          if (ExceptionUtils.getRootCause(throwable) instanceof RecoverableError) {
-            retryService.add(vin);
-          }
-
-          throw new IllegalStateException("Error finding vehicle", throwable);
-        });
+      CompletableFuture.supplyAsync(getStartCheckpointLogSupplier("Start find vehicle"))
+        .thenCompose(v -> mdClient.findVehicle(vin))
+        .thenApply(getSleepFunc())
+        .thenApply(getEndCheckpointLogFunc("End find vehicle"))
+        .thenApply(getRandomResultFunc())
+        .exceptionally(getHandleErrorFunc(vin, "Error finding vehicle"));
   }
 
   public CompletableFuture<Void> bindDeviceToVehicle(Vehicle vehicle, Device device) {
     return
-      CompletableFuture.supplyAsync(() -> {
-        logger.info("Start bind device to vehicle");
-        return null;
-      }).thenCompose(v -> mdClient.bindDeviceToVehicle(vehicle, device))
-        .thenApply(v -> {
-          doSleep(5000);
-          return v;
-        })
-        .thenApply(v -> {
-          logger.info("End device to vehicle");
-          return v;
-        })
-        .thenApply(v -> {
-          if (getBool(true)) {
-            return v;
-          } else {
-            if (getBool(true)) {
-              throw new RecoverableError("This is recoverable");
-            } else {
-              throw new UnrecoverableError("This is unrecoverable");
-            }
-          }
-        })
-        .exceptionally(throwable -> {
-          if (ExceptionUtils.getRootCause(throwable) instanceof RecoverableError) {
-            retryService.add(vehicle.getVin());
-          }
+      CompletableFuture.supplyAsync(getStartCheckpointLogSupplier("Start bind device to vehicle"))
+        .thenCompose(v -> mdClient.bindDeviceToVehicle(vehicle, device))
+        .thenApply(getSleepFunc())
+        .thenApply(getEndCheckpointLogFunc("End bind device to vehicle"))
+        .thenApply(getRandomResultFunc())
+        .exceptionally(getHandleErrorFunc(vehicle.getVin(), "Error binding device to vehicle"));
+  }
 
-          throw new IllegalStateException("Error binding device to vehicle", throwable);
-        });
+  private Supplier<Object> getStartCheckpointLogSupplier(String logMessage) {
+    return () -> {
+      logger.info(logMessage);
+      return null;
+    };
+  }
+
+  private <T> Function<T, T> getSleepFunc() {
+    return obj -> {
+      doSleep(5000);
+      return obj;
+    };
   }
 
   private void doSleep(long sleep) {
@@ -136,7 +84,38 @@ public class ProvManager {
     }
   }
 
+  private <T> Function<T, T> getEndCheckpointLogFunc(String logMessage) {
+    return obj -> {
+      logger.info(logMessage);
+      return obj;
+    };
+  }
+
   private boolean getBool(boolean randomResponse) {
     return !randomResponse || new Random().nextBoolean();
+  }
+
+  private <T> Function<T, T> getRandomResultFunc() {
+    return obj -> {
+      if (getBool(true)) {
+        return obj;
+      } else {
+        if (getBool(true)) {
+          throw new RecoverableError("This is recoverable");
+        } else {
+          throw new UnrecoverableError("This is unrecoverable");
+        }
+      }
+    };
+  }
+
+  private <T> Function<Throwable, T> getHandleErrorFunc(String vin, String message) {
+    return throwable -> {
+      if (ExceptionUtils.getRootCause(throwable) instanceof RecoverableError) {
+        retryService.add(vin);
+      }
+
+      throw new IllegalStateException(message, throwable);
+    };
   }
 }

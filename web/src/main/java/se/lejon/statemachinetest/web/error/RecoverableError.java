@@ -1,4 +1,4 @@
-package se.lejon.statemachinetest.web;
+package se.lejon.statemachinetest.web.error;
 
 public class RecoverableError extends ProvisioningError {
   public RecoverableError(String message) {

@@ -1,4 +1,4 @@
-package se.lejon.statemachinetest.web;
+package se.lejon.statemachinetest.web.statemachine;
 
 public enum Events {
   REQUEST_MSISDN,

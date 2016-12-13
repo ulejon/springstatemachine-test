@@ -1,4 +1,4 @@
-package se.lejon.statemachinetest.web;
+package se.lejon.statemachinetest.web.statemachine;
 
 public enum States {
   WAITING,

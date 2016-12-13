@@ -1,4 +1,4 @@
-package se.lejon.statemachinetest.web;
+package se.lejon.statemachinetest.web.statemachine;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.statemachine.StateMachine;
@@ -19,14 +19,14 @@ public class StateMachines {
     repo = new ConcurrentHashMap<>();
   }
 
-  StateMachine<States, Events> get(RepoKey repoKey) {
+  public StateMachine<States, Events> get(RepoKey repoKey) {
     return repo.computeIfAbsent(repoKey.key, k -> factory.getStateMachine());
   }
 
-  static final class RepoKey {
+  public static final class RepoKey {
     final String key;
 
-    RepoKey(String key) {
+    public RepoKey(String key) {
       this.key = key;
     }
   }

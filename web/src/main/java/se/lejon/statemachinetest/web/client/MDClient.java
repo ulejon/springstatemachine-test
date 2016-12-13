@@ -1,8 +1,8 @@
 package se.lejon.statemachinetest.web.client;
 
 import org.springframework.stereotype.Service;
-import se.lejon.statemachinetest.web.Device;
-import se.lejon.statemachinetest.web.Vehicle;
+import se.lejon.statemachinetest.web.model.Device;
+import se.lejon.statemachinetest.web.model.Vehicle;
 
 import java.util.concurrent.CompletableFuture;
 

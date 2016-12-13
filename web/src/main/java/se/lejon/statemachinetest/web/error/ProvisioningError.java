@@ -1,4 +1,4 @@
-package se.lejon.statemachinetest.web;
+package se.lejon.statemachinetest.web.error;
 
 public class ProvisioningError extends RuntimeException {
   public ProvisioningError(String message) {

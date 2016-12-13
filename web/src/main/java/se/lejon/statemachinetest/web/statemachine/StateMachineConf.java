@@ -1,4 +1,4 @@
-package se.lejon.statemachinetest.web.conf;
+package se.lejon.statemachinetest.web.statemachine;
 
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.Logger;
@@ -14,6 +14,9 @@ import org.springframework.statemachine.config.builders.StateMachineStateConfigu
 import org.springframework.statemachine.config.builders.StateMachineTransitionConfigurer;
 import org.springframework.statemachine.config.configurers.ExternalTransitionConfigurer;
 import se.lejon.statemachinetest.web.*;
+import se.lejon.statemachinetest.web.error.RecoverableError;
+import se.lejon.statemachinetest.web.model.Device;
+import se.lejon.statemachinetest.web.model.Vehicle;
 
 @Configuration
 @EnableStateMachineFactory

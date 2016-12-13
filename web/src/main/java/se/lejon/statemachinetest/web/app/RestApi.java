@@ -1,4 +1,4 @@
-package se.lejon.statemachinetest.web;
+package se.lejon.statemachinetest.web.app;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -11,6 +11,9 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.context.request.async.DeferredResult;
+import se.lejon.statemachinetest.web.statemachine.Events;
+import se.lejon.statemachinetest.web.statemachine.StateMachines;
+import se.lejon.statemachinetest.web.statemachine.States;
 
 import java.util.Optional;
 
